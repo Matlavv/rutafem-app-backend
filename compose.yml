@@ -5,9 +5,16 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - 3000:3000
-    environment:
-      - NODE_ENV=development
-      - PORT=3000
     volumes:
       - ./src:/app
       - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL={DATABASE_URL}
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
