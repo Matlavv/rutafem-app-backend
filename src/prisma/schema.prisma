@@ -9,34 +9,33 @@ datasource db {
 }
 
 model User {
-  id              String   @id
+  id              String     @id
   firstname       String
   lastname        String
-  email           String   @unique
+  email           String     @unique
   password        String
   phoneNumber     String
   profileImageUrl String?
-  username        String   @unique
+  username        String     @unique
   experience      String?
   biography       String?
   favoriteMusic   String?
   birthDate       DateTime
-  verified        Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  rides         UserRide[]
-  name          String
-  emailVerified Boolean    @default(false)
-  image         String?
-  sessions      Session[]
-  accounts      Account[]
+  verified        Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  name            String
+  emailVerified   Boolean    @default(false)
+  image           String?
+  rides           UserRide[]
+  accounts        Account[]
+  sessions        Session[]
 
   @@map("user")
 }
 
 model Ride {
-  id                String   @id @default(cuid())
+  id                String     @id @default(cuid())
   startingAddress   String
   arrivalAddress    String
   departureCity     String
@@ -47,10 +46,9 @@ model Ride {
   status            String
   availableSeats    Int
   vehicleId         String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  participants UserRide[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  participants      UserRide[]
 }
 
 model UserRide {
@@ -60,12 +58,10 @@ model UserRide {
   driver    Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  ride      Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, rideId])
-  // empêche doublons d'association
   @@index([userId])
   @@index([rideId])
 }
@@ -73,7 +69,7 @@ model UserRide {
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -81,7 +77,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -90,7 +85,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -100,6 +94,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }

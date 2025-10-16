@@ -3,7 +3,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './prisma';
 
 export const auth = betterAuth({
-    baseURL: 'http://localhost:3001',
+    baseURL: 'http://localhost:3000',
     database: prismaAdapter(prisma, {
         provider: 'postgresql',
     }),
