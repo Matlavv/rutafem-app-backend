@@ -9,27 +9,34 @@ datasource db {
 }
 
 model User {
-  id                BigInt      @id @default(autoincrement())
-  firstname         String
-  lastname          String
-  email             String       @unique
-  password          String
-  phoneNumber       String
-  profileImageUrl   String?
-  username          String       @unique
-  experience        String?
-  biography         String?
-  favoriteMusic     String?
-  birthDate         DateTime
-  verified          Boolean      @default(false)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  id              String   @id
+  firstname       String
+  lastname        String
+  email           String   @unique
+  password        String
+  phoneNumber     String
+  profileImageUrl String?
+  username        String   @unique
+  experience      String?
+  biography       String?
+  favoriteMusic   String?
+  birthDate       DateTime
+  verified        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  rides             UserRide[]
+  rides         UserRide[]
+  name          String
+  emailVerified Boolean    @default(false)
+  image         String?
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("user")
 }
 
 model Ride {
-  id                BigInt      @id @default(autoincrement())
+  id                String   @id @default(cuid())
   startingAddress   String
   arrivalAddress    String
   departureCity     String
@@ -39,25 +46,71 @@ model Ride {
   price             Int
   status            String
   availableSeats    Int
-  vehicleId         BigInt
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  vehicleId         String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  participants      UserRide[]
+  participants UserRide[]
 }
 
 model UserRide {
-  id          BigInt     @id @default(autoincrement())
-  userId      BigInt
-  rideId      BigInt
-  driver      Boolean
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  rideId    String
+  driver    Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ride        Ride        @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, rideId])
+  // empêche doublons d'association
   @@index([userId])
   @@index([rideId])
-  @@unique([userId, rideId]) // empêche doublons d'association
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
 }

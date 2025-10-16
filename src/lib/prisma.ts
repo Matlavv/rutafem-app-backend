@@ -1,5 +1,5 @@
 //! initialiser une seule fois prisma
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../prisma/generated/prisma';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
