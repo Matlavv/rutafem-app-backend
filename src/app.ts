@@ -5,28 +5,15 @@ import { prisma } from './lib/prisma';
 
 // Configuration du logger Pino
 const logger = pino({
-    level: process.env.LOG_LEVEL || 'info',
-    transport: process.env.NODE_ENV === 'development' ? {
-        target: 'pino-pretty',
-        options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
-            singleLine: false
-        }
-    } : undefined
+    level: process.env.LOG_LEVEL || 'info'
 });
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
-
-app.listen(3000, () => {
-    logger.info(`Server is running on port ${3000}`);
-});
-
 
 // check database connection
 async function checkDatabaseConnection() {
@@ -43,14 +30,10 @@ async function checkDatabaseConnection() {
     }
 }
 
-
 // start server with database connection check
 checkDatabaseConnection().then(async () => {
-    logger.info(`Server is running on port ${3000}`);
-
-
-    app.listen(3000, () => {
-        logger.info(`🚀 Server is running on port ${3000}`);
+    app.listen(PORT, () => {
+        logger.info(`🚀 Server is running on port ${PORT}`);
     });
 });
 
