@@ -13,6 +13,8 @@ export const updateProfileSchema = z.object({
     biography: z.string().max(1000).optional(),
     favoriteMusic: z.string().max(200).optional(),
     birthDate: z.string().datetime().or(z.date()).optional(),
+    isVerified: z.boolean().optional(),
+    isDriverVerified: z.boolean().optional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

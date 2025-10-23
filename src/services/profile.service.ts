@@ -17,7 +17,8 @@ export class ProfileService {
                 biography: true,
                 favoriteMusic: true,
                 birthDate: true,
-                verified: true,
+                isVerified: true,
+                isDriverVerified: true,
                 createdAt: true,
                 updatedAt: true,
                 user: {
@@ -46,7 +47,8 @@ export class ProfileService {
                 biography: true,
                 favoriteMusic: true,
                 birthDate: true,
-                verified: true,
+                isVerified: true,
+                isDriverVerified: true,
                 createdAt: true,
                 updatedAt: true,
                 user: {
@@ -78,7 +80,11 @@ export class ProfileService {
                 biography: true,
                 favoriteMusic: true,
                 birthDate: true,
-                verified: true,
+                isVerified: true,
+                isDriverVerified: true,
+                stripeAccountId: true,
+                stripeCustomerId: true,
+                stripeOnboardingComplete: true,
                 createdAt: true,
                 updatedAt: true,
                 user: {
@@ -111,7 +117,8 @@ export class ProfileService {
                 biography: true,
                 favoriteMusic: true,
                 birthDate: true,
-                verified: true,
+                isVerified: true,
+                isDriverVerified: true,
                 updatedAt: true,
             },
         });
