@@ -42,9 +42,30 @@ export class AuthController {
     // logout
     async logout(req: Request, res: Response, next: NextFunction) {
         try {
-            await auth.api.signOut({
-                headers: req.headers as never,
-            });
+            // Extract token from Authorization header or cookie
+            const authHeader = req.headers.authorization;
+            let token: string | null = null;
+
+            if (authHeader) {
+                token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader;
+            } else {
+                // Try cookie
+                const cookieHeader = req.headers.cookie;
+                if (cookieHeader) {
+                    const match = cookieHeader.match(/better-auth\.session_token=([^;]+)/);
+                    if (match) token = match[1];
+                }
+            }
+
+            if (!token) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Token requis pour se déconnecter',
+                });
+            }
+
+            // Delete session from DB
+            await authService.logout(token);
 
             res.json({
                 success: true,
@@ -58,12 +79,35 @@ export class AuthController {
     // current session
     async getSession(req: Request, res: Response, next: NextFunction) {
         try {
-            const session = await authService.getSession(req.headers as never);
+            // Extract token from Authorization header or cookie
+            const authHeader = req.headers.authorization;
+            let token: string | null = null;
+
+            if (authHeader) {
+                token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader;
+            } else {
+                // Try cookie
+                const cookieHeader = req.headers.cookie;
+                if (cookieHeader) {
+                    const match = cookieHeader.match(/better-auth\.session_token=([^;]+)/);
+                    if (match) token = match[1];
+                }
+            }
+
+            if (!token) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Token requis',
+                });
+            }
+
+            // Get session from DB
+            const session = await authService.getSessionByToken(token);
 
             if (!session) {
                 return res.status(401).json({
                     success: false,
-                    message: 'Aucune session active',
+                    message: 'Session invalide ou expirée',
                 });
             }
 

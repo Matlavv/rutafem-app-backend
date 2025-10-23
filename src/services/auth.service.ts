@@ -44,9 +44,41 @@ export class AuthService {
         };
     }
 
-    // Check if session exists
-    async getSession(headers: never) {
-        return auth.api.getSession({ headers });
+    // Get session by token
+    async getSessionByToken(token: string) {
+        const session = await prisma.session.findUnique({
+            where: { token },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                        emailVerified: true,
+                    },
+                },
+            },
+        });
+
+        if (!session || session.expiresAt < new Date()) {
+            return null;
+        }
+
+        return {
+            user: session.user,
+            session: {
+                id: session.id,
+                expiresAt: session.expiresAt,
+                token: session.token,
+            },
+        };
+    }
+
+    // Logout: delete session from DB
+    async logout(token: string) {
+        await prisma.session.delete({
+            where: { token },
+        });
     }
 
     // Change password
