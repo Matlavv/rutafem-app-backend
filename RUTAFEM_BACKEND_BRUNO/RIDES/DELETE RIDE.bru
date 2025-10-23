@@ -1,0 +1,16 @@
+meta {
+  name: DELETE RIDE
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{API_URL}}/api/rides/{{RIDE_ID}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
+

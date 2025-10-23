@@ -1,0 +1,32 @@
+meta {
+  name: SIGNUP
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/api/auth/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "email": "matlavlebg@example.com",
+      "password": "SecurePass123!",
+      "firstname": "Marie",
+      "lastname": "Dupont",
+      "username": "marie_d",
+      "phoneNumber": "+33612345678",
+      "birthDate": "1995-05-15T00:00:00Z"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+vars:post-response {
+  AUTH_TOKEN: res.body.data.token
+  PROFILE_ID: res.body.data.profile.id
+}

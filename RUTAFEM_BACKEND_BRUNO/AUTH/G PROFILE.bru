@@ -1,0 +1,19 @@
+meta {
+  name: G PROFILE
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{API_URL}}/api/profiles/profile
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{AUTH_TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

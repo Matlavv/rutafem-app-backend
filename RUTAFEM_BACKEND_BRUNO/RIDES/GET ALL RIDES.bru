@@ -1,0 +1,16 @@
+meta {
+  name: GET ALL RIDES
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{API_URL}}/api/rides
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
+

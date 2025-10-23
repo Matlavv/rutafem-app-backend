@@ -1,0 +1,26 @@
+meta {
+  name: LOGIN
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{API_URL}}/api/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "email": "matlavlebg@example.com",
+      "password": "SecurePass123!"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+vars:post-response {
+  AUTH_TOKEN: res.body.data.token
+}

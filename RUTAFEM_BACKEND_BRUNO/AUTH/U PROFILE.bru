@@ -1,0 +1,27 @@
+meta {
+  name: U PROFILE
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{API_URL}}/api/profiles/profile
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{AUTH_TOKEN}}
+}
+
+body:json {
+  {
+      "biography": "Passionnée de covoiturage depuis 5 ans",
+      "experience": "Plus de 100 trajets effectués",
+      "favoriteMusic": "Rock, Pop, Jazz"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

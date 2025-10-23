@@ -1,0 +1,35 @@
+meta {
+  name: CREATE RIDE
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/api/rides
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "startingAddress": "123 Rue de Paris",
+      "arrivalAddress": "456 Avenue de Lyon",
+      "departureCity": "Paris",
+      "arrivalCity": "Lyon",
+      "departureDatetime": "2025-11-01T09:00:00Z",
+      "arrivalDatetime": "2025-11-01T14:00:00Z",
+      "price": 35,
+      "availableSeats": 3,
+      "vehicleId": "vehicle-123"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+vars:post-response {
+  // Sauvegarder l'ID du ride créé pour les autres tests
+  RIDE_ID: res.body.data.id
+}
+
