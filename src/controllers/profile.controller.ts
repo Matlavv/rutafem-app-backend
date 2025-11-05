@@ -5,6 +5,7 @@ import { authService } from '../services/auth.service';
 import { profileService } from '../services/profile.service';
 
 export class ProfileController {
+    // TODO protect route
     // Get all profiles (public)
     async findAll(req: Request, res: Response, next: NextFunction) {
         try {

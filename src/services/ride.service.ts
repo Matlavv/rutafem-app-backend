@@ -1,6 +1,6 @@
+import pino from 'pino';
 import { prisma } from '../lib/prisma';
 import { CreateRideDto, UpdateRideDto } from '../schemas/ride.schema';
-import pino from 'pino';
 
 const logger = pino({ level: 'info' });
 
@@ -41,7 +41,7 @@ export class RideService {
         try {
             const ride = await prisma.ride.findUnique({
                 where: { id },
-                include: { participants: { include: { user: true } } },
+                include: { participants: { include: { profile: { include: { user: true } } } } },
             });
             if (!ride) throw new Error('Ride not found');
             logger.info({ rideId: id }, 'Ride fetched');
@@ -58,8 +58,12 @@ export class RideService {
                 where: { id },
                 data: {
                     ...data,
-                    ...(data.departureDatetime && { departureDatetime: new Date(data.departureDatetime) }),
-                    ...(data.arrivalDatetime && { arrivalDatetime: new Date(data.arrivalDatetime) }),
+                    ...(data.departureDatetime && {
+                        departureDatetime: new Date(data.departureDatetime),
+                    }),
+                    ...(data.arrivalDatetime && {
+                        arrivalDatetime: new Date(data.arrivalDatetime),
+                    }),
                 },
             });
             logger.info({ rideId: id }, 'Ride updated');
@@ -82,4 +86,3 @@ export class RideService {
 }
 
 export const rideService = new RideService();
-

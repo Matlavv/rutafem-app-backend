@@ -16,4 +16,3 @@ export const updateRideSchema = createRideSchema.partial();
 
 export type CreateRideDto = z.infer<typeof createRideSchema>;
 export type UpdateRideDto = z.infer<typeof updateRideSchema>;
-

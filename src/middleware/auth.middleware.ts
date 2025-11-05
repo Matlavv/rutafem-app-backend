@@ -91,39 +91,3 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
         });
     }
 };
-
-// Optional auth (add user if authenticated)
-export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const token = extractToken(req);
-
-        if (token) {
-            const session = await prisma.session.findUnique({
-                where: { token },
-                include: {
-                    user: {
-                        select: {
-                            id: true,
-                            email: true,
-                            name: true,
-                        },
-                    },
-                },
-            });
-
-            if (session && session.expiresAt >= new Date()) {
-                req.user = {
-                    id: session.user.id,
-                    email: session.user.email,
-                    session: {
-                        id: session.id,
-                        expiresAt: session.expiresAt,
-                    },
-                };
-            }
-        }
-    } catch {
-        // Ignore errors, continue without user
-    }
-    next();
-};
