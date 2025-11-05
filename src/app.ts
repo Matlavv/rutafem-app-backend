@@ -1,6 +1,8 @@
 import cors from 'cors';
 import express from 'express';
 import pino from 'pino';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 import { prisma } from './lib/prisma';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
@@ -21,6 +23,20 @@ app.use(
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+        explorer: true,
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'RutaFem API Docs',
+    }),
+);
+app.get('/api-docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+});
 
 // Routes API
 app.get('/', (req, res) => res.json({ status: 'ok', message: 'RutaFem API' }));
