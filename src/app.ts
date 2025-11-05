@@ -1,15 +1,15 @@
 import cors from 'cors';
 import express from 'express';
-import pino from 'pino';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { prisma } from './lib/prisma';
 import { errorHandler } from './middleware/errorHandler';
+import { logger, requestLogger } from './middleware/logger.middleware';
+import { metricsCollector, metricsEndpoint } from './middleware/metrics.middleware';
 import authRoutes from './routes/auth.routes';
 import profileRoutes from './routes/profile.routes';
 import rideRoutes from './routes/ride.routes';
 
-const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -19,6 +19,10 @@ app.use(
         credentials: true, // allow cookies/sessions
     }),
 );
+
+// Middleware d'instrumentation
+app.use(requestLogger);
+app.use(metricsCollector);
 
 // Middleware
 app.use(express.json());
@@ -40,6 +44,7 @@ app.get('/api-docs.json', (req, res) => {
 
 // Routes API
 app.get('/', (req, res) => res.json({ status: 'ok', message: 'RutaFem API' }));
+app.get('/metrics', metricsEndpoint);
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/rides', rideRoutes);
