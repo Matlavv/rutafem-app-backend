@@ -7,7 +7,11 @@ meta {
 delete {
   url: {{API_URL}}/api/rides/{{RIDE_ID}}
   body: none
-  auth: inherit
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{AUTH_TOKEN}}
 }
 
 settings {

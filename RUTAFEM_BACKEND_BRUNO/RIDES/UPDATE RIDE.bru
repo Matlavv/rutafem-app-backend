@@ -7,14 +7,17 @@ meta {
 patch {
   url: {{API_URL}}/api/rides/{{RIDE_ID}}
   body: json
-  auth: inherit
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{AUTH_TOKEN}}
 }
 
 body:json {
   {
       "price": 40,
-      "availableSeats": 2,
-      "status": "confirmed"
+      "availableSeats": 2
   }
 }
 

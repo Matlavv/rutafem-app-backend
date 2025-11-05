@@ -7,15 +7,10 @@ meta {
 get {
   url: {{API_URL}}/api/rides/{{RIDE_ID}}
   body: none
-  auth: inherit
+  auth: none
 }
 
 settings {
   encodeUrl: true
-}
-
-vars:post-response {
-  // Sauvegarder l'ID du ride créé pour les autres tests
-  RIDE_ID: res.body.data.id
 }
 
