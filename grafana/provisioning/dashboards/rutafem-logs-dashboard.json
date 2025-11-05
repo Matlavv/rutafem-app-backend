@@ -39,7 +39,7 @@
             "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 },
             "targets": [
                 {
-                    "expr": "{service=\"rutafem-backend\"} |~ `\"level\":\"error\"`",
+                    "expr": "{service=\"rutafem-backend\"} | json | __error__=\"\" | level = \"50\"",
                     "refId": "A"
                 }
             ],
@@ -86,7 +86,7 @@
             "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
             "targets": [
                 {
-                    "expr": "sum by (path) (count_over_time({service=\"rutafem-backend\"} |~ `\"level\":\"error\"` | json | __error__=\"\" [5m]))",
+                    "expr": "sum by (path) (count_over_time({service=\"rutafem-backend\"} | json | __error__=\"\" | level = \"50\" [5m]))",
                     "legendFormat": "{{path}}",
                     "refId": "A"
                 }

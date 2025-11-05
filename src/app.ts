@@ -11,6 +11,7 @@ import { apiLimiter } from './middleware/rateLimit.middleware';
 import authRoutes from './routes/auth.routes';
 import profileRoutes from './routes/profile.routes';
 import rideRoutes from './routes/ride.routes';
+import testRoutes from './routes/test.routes';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 const app = express();
@@ -58,6 +59,7 @@ app.get('/', (req, res) => res.json({ status: 'ok', message: 'RutaFem API' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/rides', rideRoutes);
+app.use('/api/test', testRoutes); // TODO delete
 
 app.use(errorHandler);
 
