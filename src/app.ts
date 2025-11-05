@@ -5,6 +5,8 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { prisma } from './lib/prisma';
 import { errorHandler } from './middleware/errorHandler';
+import { metricsMiddleware, register } from './middleware/metrics.middleware';
+import { apiLimiter } from './middleware/rateLimit.middleware';
 import authRoutes from './routes/auth.routes';
 import profileRoutes from './routes/profile.routes';
 import rideRoutes from './routes/ride.routes';
@@ -23,6 +25,13 @@ app.use(
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(metricsMiddleware);
+app.use('/api/', apiLimiter); // rate limiting
+
+app.get('/metrics', async (req, res) => {
+    res.setHeader('Content-Type', register.contentType);
+    res.send(await register.metrics());
+});
 
 app.use(
     '/api-docs',
