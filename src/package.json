@@ -6,6 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules ./app.ts | pino-pretty -c -t 'SYS:standard' -i pid,hostname",
+        "dev:docker": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules ./app.ts",
         "build": "tsc",
         "start": "node dist/app.js"
     },

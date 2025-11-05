@@ -1,12 +1,21 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import pino from 'pino';
 import { ZodError } from 'zod';
 import { Prisma } from '../prisma/generated/prisma';
-import pino from 'pino';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
-    logger.error({ error: err, path: req.path, method: req.method }, 'Request error');
+    logger.error(
+        {
+            request_id: req.request_id,
+            error: err.message,
+            stack: err.stack,
+            path: req.path,
+            method: req.method,
+        },
+        'Request error',
+    );
 
     if (err instanceof ZodError) {
         return res.status(400).json({
@@ -30,4 +39,3 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
         message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
     });
 };
-

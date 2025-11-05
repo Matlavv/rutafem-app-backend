@@ -17,9 +17,8 @@ export const metricsMiddleware = (req: Request, res: Response, next: NextFunctio
     const start = Date.now();
 
     res.on('finish', () => {
-        const duration = Date.now() - start / 1000; //seconds
-        const route = req.route?.path || req.path;
-        const statusCode = res.statusCode;
+        const duration = (Date.now() - start) / 1000; // seconds
+        const route = req.route ? `${req.baseUrl || ''}${req.route.path}` : req.path.split('?')[0];
         httpRequestDuration.labels(req.method, route, res.statusCode.toString()).observe(duration);
     });
 

@@ -134,13 +134,22 @@ Utile pour importer dans Postman, Insomnia, Bruno, etc.
 
 ## 🛠️ Technologies
 
+### Backend
+
 -   **Node.js** + **Express** - Backend framework
 -   **TypeScript** - Type safety
 -   **Prisma** - ORM pour PostgreSQL
 -   **Better Auth** - Authentification
 -   **Zod** - Validation des schémas
 -   **Swagger** - Documentation API
--   **Pino** - Logging
+
+### Monitoring & Observabilité
+
+-   **Pino** - Logging structuré JSON
+-   **Prometheus** - Collecte de métriques
+-   **Grafana** - Visualisation de métriques et logs
+-   **Loki** - Agrégation de logs
+-   **prom-client** - Instrumentation des métriques HTTP
 
 ## 📝 Format des réponses
 
@@ -175,16 +184,81 @@ Toutes les réponses suivent le format :
 
 ## 🐳 Docker
 
-Lancer avec Docker Compose :
+Lancer la stack complète (backend + monitoring) :
 
 ```bash
-docker-compose up
+docker-compose up -d
+```
+
+Cela démarre :
+
+-   **Backend API** (port 3000)
+-   **Prometheus** (port 9090) - Collecte des métriques
+-   **Grafana** (port 3001) - Visualisation
+-   **Loki** (port 3100) - Agrégation des logs
+-   **Promtail** - Collecteur de logs
+
+## 📊 Monitoring & Observabilité
+
+### Accès aux outils
+
+| Service        | URL                           | Identifiants  |
+| -------------- | ----------------------------- | ------------- |
+| **Grafana**    | http://localhost:3001         | admin / admin |
+| **Prometheus** | http://localhost:9090         | -             |
+| **Métriques**  | http://localhost:3000/metrics | -             |
+
+### Dashboards Grafana
+
+**1. RutaFem Backend Monitoring** (Métriques)
+
+-   📈 Latence HTTP (p50, p95, p99) par route
+-   🔄 Requests Per Second (RPS) par route
+-   ❌ Taux d'erreurs 5xx
+-   📊 Distribution des status codes
+
+**2. RutaFem Logs & Errors** (Logs)
+
+-   📜 Logs en temps réel (JSON structuré)
+-   ❌ Filtrage des erreurs uniquement
+-   🐌 Détection des requêtes lentes (>500ms)
+-   🔍 Recherche par `request_id` pour tracer les requêtes
+
+### Tests de charge (k6)
+
+Pour désactiver le rate limiting pendant les tests :
+
+```bash
+DISABLE_RATE_LIMIT=true docker-compose up
+```
+
+Ou dans votre fichier `.env` :
+
+```env
+DISABLE_RATE_LIMIT=true
+```
+
+### Corrélation des logs
+
+Chaque requête possède un `request_id` unique UUID pour tracer son parcours complet :
+
+```json
+{
+    "level": "info",
+    "request_id": "550e8400-e29b-41d4-a716-446655440000",
+    "method": "GET",
+    "path": "/api/rides",
+    "status_code": 200,
+    "duration_ms": 45,
+    "msg": "Request completed"
+}
 ```
 
 ## 📦 Scripts disponibles
 
 ```bash
-npm run dev      # Mode développement avec hot-reload
-npm run build    # Compilation TypeScript
-npm run start    # Lancer en production
+npm run dev          # Mode développement avec logs pretty (local)
+npm run dev:docker   # Mode développement avec logs JSON (Docker)
+npm run build        # Compilation TypeScript
+npm run start        # Lancer en production
 ```

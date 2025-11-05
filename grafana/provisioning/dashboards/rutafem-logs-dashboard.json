@@ -1,0 +1,155 @@
+{
+    "uid": "rutafem-logs",
+    "title": "RutaFem Logs & Errors",
+    "tags": ["loki", "logs", "backend"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+        {
+            "id": 1,
+            "title": "Logs en temps réel",
+            "type": "logs",
+            "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 },
+            "targets": [
+                {
+                    "expr": "{service=\"rutafem-backend\"} | json | __error__=\"\" | path != \"/metrics\"",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false,
+                "prettifyLogMessage": true,
+                "enableLogDetails": true,
+                "dedupStrategy": "none"
+            },
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            }
+        },
+        {
+            "id": 2,
+            "title": "Erreurs (ERROR level)",
+            "type": "logs",
+            "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 },
+            "targets": [
+                {
+                    "expr": "{service=\"rutafem-backend\"} |~ `\"level\":\"error\"`",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false,
+                "prettifyLogMessage": true,
+                "enableLogDetails": true
+            },
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            }
+        },
+        {
+            "id": 3,
+            "title": "Logs par niveau (count)",
+            "type": "timeseries",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+            "targets": [
+                {
+                    "expr": "sum by (level) (count_over_time({service=\"rutafem-backend\"} | json | __error__=\"\" [1m]))",
+                    "legendFormat": "{{level}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {}
+                }
+            },
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            }
+        },
+        {
+            "id": 4,
+            "title": "Erreurs par path",
+            "type": "timeseries",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
+            "targets": [
+                {
+                    "expr": "sum by (path) (count_over_time({service=\"rutafem-backend\"} |~ `\"level\":\"error\"` | json | __error__=\"\" [5m]))",
+                    "legendFormat": "{{path}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {}
+                }
+            },
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            }
+        },
+        {
+            "id": 5,
+            "title": "Requêtes lentes (> 500ms)",
+            "type": "logs",
+            "gridPos": { "h": 10, "w": 24, "x": 0, "y": 30 },
+            "targets": [
+                {
+                    "expr": "{service=\"rutafem-backend\"} | json | __error__=\"\" | duration_ms > 500",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false,
+                "prettifyLogMessage": true,
+                "enableLogDetails": true
+            },
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            }
+        },
+        {
+            "id": 6,
+            "title": "Recherche par request_id",
+            "type": "logs",
+            "gridPos": { "h": 10, "w": 24, "x": 0, "y": 40 },
+            "targets": [
+                {
+                    "expr": "{service=\"rutafem-backend\"} | json | __error__=\"\" | request_id =~ `.+`",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false,
+                "prettifyLogMessage": true,
+                "enableLogDetails": true
+            },
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Modifiez la requête pour chercher un request_id spécifique: request_id = \"votre-uuid\""
+        }
+    ]
+}

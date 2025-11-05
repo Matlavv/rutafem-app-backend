@@ -5,6 +5,7 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { prisma } from './lib/prisma';
 import { errorHandler } from './middleware/errorHandler';
+import { loggerMiddleware } from './middleware/logger.middleware';
 import { metricsMiddleware, register } from './middleware/metrics.middleware';
 import { apiLimiter } from './middleware/rateLimit.middleware';
 import authRoutes from './routes/auth.routes';
@@ -25,8 +26,13 @@ app.use(
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(loggerMiddleware); // request_id + logs JSON
 app.use(metricsMiddleware);
-app.use('/api/', apiLimiter); // rate limiting
+
+// rate limiting (disabled for k6 tests)
+if (process.env.DISABLE_RATE_LIMIT !== 'true') {
+    app.use('/api/', apiLimiter);
+}
 
 app.get('/metrics', async (req, res) => {
     res.setHeader('Content-Type', register.contentType);

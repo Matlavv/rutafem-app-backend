@@ -10,19 +10,19 @@
     "panels": [
         {
             "id": 1,
-            "title": "HTTP p95 Latency par Route",
+            "title": "HTTP p95 Latency par Route (ms)",
             "type": "timeseries",
             "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(rutafem_http_request_duration_seconds_bucket[5m])) by (route, le))",
-                    "legendFormat": "{{route}}",
+                    "expr": "1000 * histogram_quantile(0.95, sum by (le, route, method) (rate(rutafem_http_request_duration_seconds_bucket[5m])))",
+                    "legendFormat": "{{method}} {{route}}",
                     "refId": "A"
                 }
             ],
             "fieldConfig": {
                 "defaults": {
-                    "unit": "s",
+                    "unit": "ms",
                     "custom": {}
                 }
             }
@@ -34,8 +34,8 @@
             "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
             "targets": [
                 {
-                    "expr": "sum(rate(rutafem_http_request_duration_seconds_count[1m])) by (route)",
-                    "legendFormat": "{{route}}",
+                    "expr": "sum by (route, method) (rate(rutafem_http_request_duration_seconds_count[1m]))",
+                    "legendFormat": "{{method}} {{route}}",
                     "refId": "A"
                 }
             ],
@@ -53,7 +53,7 @@
             "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
             "targets": [
                 {
-                    "expr": "sum(rate(rutafem_http_request_duration_seconds_count{status_code=~\"5..\"}[5m])) / sum(rate(rutafem_http_request_duration_seconds_count[5m])) * 100",
+                    "expr": "100 * (sum(rate(rutafem_http_request_duration_seconds_count{status_code=~\"5..\"}[5m])) / sum(rate(rutafem_http_request_duration_seconds_count[5m])))",
                     "legendFormat": "5xx Rate",
                     "refId": "A"
                 }
@@ -86,29 +86,29 @@
         },
         {
             "id": 5,
-            "title": "Latence p50 vs p95 vs p99",
+            "title": "Latence p50 vs p95 vs p99 (ms)",
             "type": "timeseries",
             "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.50, sum(rate(rutafem_http_request_duration_seconds_bucket[5m])) by (le))",
-                    "legendFormat": "p50",
+                    "expr": "1000 * histogram_quantile(0.50, sum by (le, route, method) (rate(rutafem_http_request_duration_seconds_bucket[5m])))",
+                    "legendFormat": "p50 {{method}} {{route}}",
                     "refId": "A"
                 },
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(rutafem_http_request_duration_seconds_bucket[5m])) by (le))",
-                    "legendFormat": "p95",
+                    "expr": "1000 * histogram_quantile(0.95, sum by (le, route, method) (rate(rutafem_http_request_duration_seconds_bucket[5m])))",
+                    "legendFormat": "p95 {{method}} {{route}}",
                     "refId": "B"
                 },
                 {
-                    "expr": "histogram_quantile(0.99, sum(rate(rutafem_http_request_duration_seconds_bucket[5m])) by (le))",
-                    "legendFormat": "p99",
+                    "expr": "1000 * histogram_quantile(0.99, sum by (le, route, method) (rate(rutafem_http_request_duration_seconds_bucket[5m])))",
+                    "legendFormat": "p99 {{method}} {{route}}",
                     "refId": "C"
                 }
             ],
             "fieldConfig": {
                 "defaults": {
-                    "unit": "s",
+                    "unit": "ms",
                     "custom": {}
                 }
             }
