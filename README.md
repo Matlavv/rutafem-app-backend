@@ -51,7 +51,7 @@ Une fois le serveur démarré, accédez à la documentation interactive Swagger 
 
 **🔗 [http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
 
-La documentation Swagger est **accessible sans authentification** et vous permet de :
+La documentation Swagger est **accessible** et vous permet de :
 
 -   ✅ Voir tous les endpoints disponibles
 -   ✅ Consulter les schémas de données
@@ -173,13 +173,6 @@ Toutes les réponses suivent le format :
 -   Les sessions sont mises à jour si > 24h
 -   Support des tokens Bearer (mobile) et cookies (web)
 
-### Validation
-
--   Email valide requis
--   Mot de passe : min 8 caractères, majuscule, minuscule, chiffre et caractère spécial
--   Username : min 3 caractères
--   Numéro de téléphone : format international
-
 ## 🐳 Docker
 
 Lancer avec Docker Compose :
@@ -195,14 +188,3 @@ npm run dev      # Mode développement avec hot-reload
 npm run build    # Compilation TypeScript
 npm run start    # Lancer en production
 ```
-
-## 🤝 Contribution
-
-1. Créer une branche depuis `main`
-2. Faire vos modifications
-3. Tester avec Swagger
-4. Créer une Pull Request
-
-## 📄 Licence
-
-ISC - RutaFem Team
