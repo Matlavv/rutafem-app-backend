@@ -1,0 +1,19 @@
+meta {
+  name: D PROFILE
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{API_URL}}/api/profiles/profile
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{AUTH_TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,15 @@
+meta {
+  name: ALL USERS
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{API_URL}}/api/profiles
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

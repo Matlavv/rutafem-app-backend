@@ -8,30 +8,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User table for Better-Auth (authentication only)
 model User {
-  id              String     @id
-  firstname       String
-  lastname        String
-  email           String     @unique
-  password        String
-  phoneNumber     String
-  profileImageUrl String?
-  username        String     @unique
-  experience      String?
-  biography       String?
-  favoriteMusic   String?
-  birthDate       DateTime
-  verified        Boolean    @default(false)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  name            String
-  emailVerified   Boolean    @default(false)
-  image           String?
-  rides           UserRide[]
-  accounts        Account[]
-  sessions        Session[]
+  id            String    @id
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  name          String
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  profile       Profile?
+  accounts      Account[]
+  sessions      Session[]
 
   @@map("user")
+}
+
+// Profile table for users logic (user data)
+model Profile {
+  id                  String     @id @default(cuid())
+  userId              String     @unique
+  firstname           String
+  lastname            String
+  username            String     @unique
+  phoneNumber         String
+  profileImageUrl     String?
+  experience          String?
+  biography           String?
+  favoriteMusic       String?
+  birthDate           DateTime
+  isVerified          Boolean    @default(false)
+  isDriverVerified    Boolean    @default(false)
+  
+  // Stripe fields for payments
+  stripeAccountId     String?    @unique
+  stripeCustomerId    String?    @unique
+  stripeOnboardingComplete Boolean @default(false)
+  
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  user                User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rides               UserRide[]
+
+  @@map("profile")
 }
 
 model Ride {
@@ -53,16 +74,17 @@ model Ride {
 
 model UserRide {
   id        String   @id @default(cuid())
-  userId    String
+  profileId String
   rideId    String
   driver    Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   ride      Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, rideId])
-  @@index([userId])
+  @@unique([profileId, rideId])
+  @@index([profileId])
   @@index([rideId])
 }
 

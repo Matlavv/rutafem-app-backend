@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "RUTAFEM_BACKEND_BRUNO",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
