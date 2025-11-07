@@ -52,6 +52,8 @@ model Profile {
   user                User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   rides               UserRide[]
 
+  @@index([isVerified])
+  @@index([isDriverVerified])
   @@map("profile")
 }
 
@@ -70,6 +72,13 @@ model Ride {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
   participants      UserRide[]
+
+  @@index([status])
+  @@index([departureDatetime])
+  @@index([departureCity])
+  @@index([arrivalCity])
+  @@index([createdAt(sort: Desc)])
+  @@index([departureCity, arrivalCity, departureDatetime])
 }
 
 model UserRide {
@@ -99,6 +108,9 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([userId, expiresAt])
   @@map("session")
 }
 
@@ -118,6 +130,8 @@ model Account {
   updatedAt             DateTime  @updatedAt
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([providerId, accountId])
   @@map("account")
 }
 
@@ -129,5 +143,7 @@ model Verification {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
 
+  @@index([identifier])
+  @@index([identifier, expiresAt])
   @@map("verification")
 }
