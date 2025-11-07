@@ -1,0 +1,7 @@
+# Ce dossier contient les résultats des tests K6
+# Les fichiers générés:
+# - smoke-test-summary.json
+# - stress-test-summary.json
+# - stress-test-report.txt
+# - baseline-metrics.json
+

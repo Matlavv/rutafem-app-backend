@@ -1,0 +1,24 @@
+{
+  "requests": {
+    "total": 297,
+    "byMethod": {
+      "GET": 297
+    },
+    "byStatus": {
+      "200": 297
+    }
+  },
+  "responseTimes": {
+    "count": 297,
+    "avg": 38.9,
+    "p50": 2,
+    "p95": 93,
+    "p99": 280,
+    "min": 0,
+    "max": 284
+  },
+  "errors": {
+    "total": 0,
+    "rate": 0
+  }
+}

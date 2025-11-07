@@ -1,11 +1,11 @@
 import cors from 'cors';
 import express from 'express';
-import pino from 'pino';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { prisma } from './lib/prisma';
 import { errorHandler } from './middleware/errorHandler';
-import { loggerMiddleware } from './middleware/logger.middleware';
+import { logger, requestLogger, loggerMiddleware } from './middleware/logger.middleware';
+import { metricsCollector, metricsEndpoint } from './middleware/metrics.middleware';
 import { metricsMiddleware, register } from './middleware/metrics.middleware';
 import { apiLimiter } from './middleware/rateLimit.middleware';
 import authRoutes from './routes/auth.routes';
@@ -13,7 +13,6 @@ import profileRoutes from './routes/profile.routes';
 import rideRoutes from './routes/ride.routes';
 import testRoutes from './routes/test.routes';
 
-const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -24,7 +23,9 @@ app.use(
     }),
 );
 
-// Middleware
+app.use(requestLogger);
+app.use(metricsCollector);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware); // request_id + logs JSON
@@ -54,8 +55,9 @@ app.get('/api-docs.json', (req, res) => {
     res.send(swaggerSpec);
 });
 
-// Routes API
+// API routes
 app.get('/', (req, res) => res.json({ status: 'ok', message: 'RutaFem API' }));
+app.get('/metrics', metricsEndpoint);
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/rides', rideRoutes);
