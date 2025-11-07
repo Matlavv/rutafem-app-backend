@@ -224,19 +224,42 @@ Cela démarre :
 -   🐌 Détection des requêtes lentes (>500ms)
 -   🔍 Recherche par `request_id` pour tracer les requêtes
 
-### Tests de charge (k6)
+**3. k6 Load Testing Results** (Tests de charge)
 
-Pour désactiver le rate limiting pendant les tests :
+-   🚀 Virtual Users (VUs) en temps réel
+-   📊 RPS (Requests Per Second)
+-   ⏱️ Latence HTTP (p95, p99) avec SLOs
+-   ❌ Taux d'échec et checks
+-   📈 Corrélation avec métriques backend
+
+### Tests de charge avec k6
+
+#### Lancer les tests
 
 ```bash
-DISABLE_RATE_LIMIT=true docker-compose up
+cd src
+
+# Smoke test (rapide, 1 min)
+npm run test:smoke
+
+# Stress test (complet, 5 min)
+npm run test:stress
+
+# Test des erreurs backend
+npm run test:errors
 ```
 
-Ou dans votre fichier `.env` :
+#### Observer en temps réel dans Grafana
 
-```env
-DISABLE_RATE_LIMIT=true
-```
+1. Ouvrir Grafana : http://localhost:3001
+2. Dashboard **"k6 Load Testing Results"** : Métriques k6 en temps réel
+3. Dashboard **"RutaFem Backend Monitoring"** : Métriques backend corrélées
+
+#### Configuration
+
+Le rate limiting est **automatiquement désactivé** pour les tests k6 via `DISABLE_RATE_LIMIT=true` dans le service k6.
+
+📚 **Guide complet** : [K6-PROMETHEUS-GUIDE.md](K6-PROMETHEUS-GUIDE.md)
 
 ### Corrélation des logs
 
@@ -256,9 +279,21 @@ Chaque requête possède un `request_id` unique UUID pour tracer son parcours co
 
 ## 📦 Scripts disponibles
 
+### Développement
+
 ```bash
 npm run dev          # Mode développement avec logs pretty (local)
 npm run dev:docker   # Mode développement avec logs JSON (Docker)
 npm run build        # Compilation TypeScript
 npm run start        # Lancer en production
+```
+
+### Tests
+
+```bash
+npm run test:errors       # Tester les erreurs backend (trigger erreurs)
+npm run test:smoke        # k6 Smoke test (5 VUs, 1 min) → Prometheus
+npm run test:stress       # k6 Stress test (0-100 VUs, 5 min) → Prometheus
+npm run test:smoke:local  # k6 Smoke test (résultats console uniquement)
+npm run test:stress:local # k6 Stress test (résultats console uniquement)
 ```

@@ -13,14 +13,23 @@ services:
       - ./src/.env
     networks:
       - app-network
+      - monitoring
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service"
+    labels:
+      - "logging=promtail"
+      - "service=rutafem-backend"
 
-  # K6 - Tests de charge (profile: test)
   k6:
     image: grafana/k6:latest
     container_name: k6
@@ -28,15 +37,21 @@ services:
       - test
     networks:
       - app-network
+      - monitoring
     volumes:
       - ./k6:/scripts
-      - ./results:/results
+      - ./k6/results:/results
+    env_file:
+      - ./src/.env
     environment:
       - BASE_URL=http://backend:3000
+      - DISABLE_RATE_LIMIT=true
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+      - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
     depends_on:
       backend:
         condition: service_healthy
-    command: run /scripts/smoke-test.js
+    command: run --out experimental-prometheus-rw /scripts/smoke-test.js
 
   prometheus:
     image: prom/prometheus:latest
@@ -96,18 +111,9 @@ volumes:
   prometheus-data:
   grafana-data:
   loki-data:
-    
- networks:
+
+networks:
   app-network:
-      - monitoring
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-        labels: "service"
-    labels:
-      - "logging=promtail"
-      - "service=rutafem-backend"
-  monitoring: 
+    driver: bridge
+  monitoring:
     driver: bridge

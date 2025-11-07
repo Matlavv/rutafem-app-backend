@@ -6,6 +6,10 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "test:errors": "node scripts/test-errors.js",
+        "test:smoke": "cd .. && docker-compose run --rm k6 run --out experimental-prometheus-rw /k6/smoke-test.js",
+        "test:stress": "cd .. && docker-compose run --rm k6 run --out experimental-prometheus-rw /k6/stress-test.js",
+        "test:smoke:local": "cd .. && docker-compose run --rm k6 run /scripts/smoke-test.js",
+        "test:stress:local": "cd .. && docker-compose run --rm k6 run /scripts/stress-test.js",
         "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules ./app.ts | pino-pretty -c -t 'SYS:standard' -i pid,hostname",
         "dev:docker": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules ./app.ts",
         "build": "tsc",

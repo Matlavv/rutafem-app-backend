@@ -3,6 +3,7 @@
  */
 
 export const BASE_URL = __ENV.BASE_URL || 'http://backend:3000';
+export const DATABASE_URL = __ENV.K6_DATABASE_URL;
 
 // SLOs (Service Level Objectives) - à ajuster selon vos besoins
 export const SLO = {
@@ -34,4 +35,3 @@ export const TEST_USER = {
     password: 'Test123!@#',
     name: 'Test K6 User',
 };
-

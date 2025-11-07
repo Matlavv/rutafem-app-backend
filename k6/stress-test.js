@@ -1,14 +1,14 @@
-import http from 'k6/http';
 import { check, sleep } from 'k6';
+import http from 'k6/http';
 import { Rate, Trend } from 'k6/metrics';
-import { BASE_URL, SLO, ENDPOINTS } from './config.js';
+import { BASE_URL, ENDPOINTS, SLO } from './config.js';
 
 /**
  * STRESS TEST
- * 
+ *
  * Objectif: Identifier les limites du système et les goulots d'étranglement
  * Durée: ~5 minutes
- * 
+ *
  * Scénario par étapes:
  * 1. Ramp-up: 0 -> 50 VUs en 1min (montée progressive)
  * 2. Plateau: 50 VUs pendant 2min (charge soutenue)
@@ -24,29 +24,29 @@ const ridesLatency = new Trend('rides_latency');
 export const options = {
     // Test par étapes
     stages: [
-        { duration: '1m', target: 50 },   // Montée progressive
-        { duration: '2m', target: 50 },   // Charge soutenue
+        { duration: '1m', target: 50 }, // Montée progressive
+        { duration: '2m', target: 50 }, // Charge soutenue
         { duration: '30s', target: 100 }, // Pic rapide
-        { duration: '1m', target: 100 },  // Charge max
-        { duration: '30s', target: 0 },   // Descente
+        { duration: '1m', target: 100 }, // Charge max
+        { duration: '30s', target: 0 }, // Descente
     ],
 
     // Thresholds basés sur les SLOs
     thresholds: {
         // Temps de réponse p95 < 300ms
-        'http_req_duration': [`p(95)<${SLO.p95Duration}`],
+        http_req_duration: [`p(95)<${SLO.p95Duration}`],
 
         // Temps de réponse p99 < 500ms pour l'endpoint rides
         'http_req_duration{endpoint:rides}': [`p(99)<${SLO.p99Duration}`],
 
         // Moins de 1% d'échecs
-        'http_req_failed': [`rate<${SLO.errorRate}`],
+        http_req_failed: [`rate<${SLO.errorRate}`],
 
         // Taux d'erreurs < 1%
-        'errors': [`rate<${SLO.errorRate}`],
+        errors: [`rate<${SLO.errorRate}`],
 
         // 95% des requêtes rides < 300ms
-        'rides_latency': [`p(95)<${SLO.p95Duration}`],
+        rides_latency: [`p(95)<${SLO.p95Duration}`],
     },
 
     tags: {
@@ -83,7 +83,6 @@ export default function () {
 
         // Tracker la latence de l'endpoint critique
         ridesLatency.add(res.timings.duration);
-
     } else {
         // 30% - Healthcheck
         const res = http.get(`${BASE_URL}${ENDPOINTS.healthcheck}`, {
@@ -103,9 +102,9 @@ export function handleSummary(data) {
     const summary = generateDetailedSummary(data);
 
     return {
-        'stdout': summary.text,
-        '/results/stress-test-summary.json': JSON.stringify(data, null, 2),
-        '/results/stress-test-report.txt': summary.report,
+        stdout: summary.text,
+        './k6/results/stress-test-summary.json': JSON.stringify(data, null, 2),
+        './k6/results/stress-test-report.txt': summary.report,
     };
 }
 
@@ -118,7 +117,7 @@ function generateDetailedSummary(data) {
     const metrics = data.metrics;
 
     // Vue d'ensemble
-    lines.push('📊 VUE D\'ENSEMBLE');
+    lines.push("📊 VUE D'ENSEMBLE");
     lines.push('─────────────────');
     if (metrics.vus) {
         lines.push(`VUs max: ${metrics.vus.values.max}`);
@@ -140,10 +139,18 @@ function generateDetailedSummary(data) {
         if (duration.med !== undefined) lines.push(`Med: ${duration.med.toFixed(2)}ms`);
         if (duration['p(90)'] !== undefined) lines.push(`p90: ${duration['p(90)'].toFixed(2)}ms`);
         if (duration['p(95)'] !== undefined) {
-            lines.push(`p95: ${duration['p(95)'].toFixed(2)}ms ${duration['p(95)'] > SLO.p95Duration ? '❌ SLO dépassé' : '✅'}`);
+            lines.push(
+                `p95: ${duration['p(95)'].toFixed(2)}ms ${
+                    duration['p(95)'] > SLO.p95Duration ? '❌ SLO dépassé' : '✅'
+                }`,
+            );
         }
         if (duration['p(99)'] !== undefined) {
-            lines.push(`p99: ${duration['p(99)'].toFixed(2)}ms ${duration['p(99)'] > SLO.p99Duration ? '❌ SLO dépassé' : '✅'}`);
+            lines.push(
+                `p99: ${duration['p(99)'].toFixed(2)}ms ${
+                    duration['p(99)'] > SLO.p99Duration ? '❌ SLO dépassé' : '✅'
+                }`,
+            );
         }
         if (duration.max !== undefined) lines.push(`Max: ${duration.max.toFixed(2)}ms`);
     }
@@ -158,10 +165,18 @@ function generateDetailedSummary(data) {
             lines.push(`Avg: ${ridesLatency.avg.toFixed(2)}ms`);
         }
         if (ridesLatency['p(95)'] !== undefined) {
-            lines.push(`p95: ${ridesLatency['p(95)'].toFixed(2)}ms ${ridesLatency['p(95)'] > SLO.p95Duration ? '❌' : '✅'}`);
+            lines.push(
+                `p95: ${ridesLatency['p(95)'].toFixed(2)}ms ${
+                    ridesLatency['p(95)'] > SLO.p95Duration ? '❌' : '✅'
+                }`,
+            );
         }
         if (ridesLatency['p(99)'] !== undefined) {
-            lines.push(`p99: ${ridesLatency['p(99)'].toFixed(2)}ms ${ridesLatency['p(99)'] > SLO.p99Duration ? '❌' : '✅'}`);
+            lines.push(
+                `p99: ${ridesLatency['p(99)'].toFixed(2)}ms ${
+                    ridesLatency['p(99)'] > SLO.p99Duration ? '❌' : '✅'
+                }`,
+            );
         }
         lines.push('');
     }
@@ -171,7 +186,7 @@ function generateDetailedSummary(data) {
     lines.push('──────────');
     if (metrics.http_req_failed) {
         const failRate = metrics.http_req_failed.values.rate * 100;
-        const status = failRate < (SLO.errorRate * 100) ? '✅' : '❌';
+        const status = failRate < SLO.errorRate * 100 ? '✅' : '❌';
         lines.push(`Taux d'échec: ${failRate.toFixed(2)}% ${status}`);
         lines.push(`Requêtes échouées: ${metrics.http_req_failed.values.fails || 0}`);
     }
@@ -190,7 +205,7 @@ function generateDetailedSummary(data) {
         issues.push('⚠️  P95 dépasse le SLO - Investiguer les temps de réponse');
     }
     if (metrics.http_req_failed?.values.rate > SLO.errorRate) {
-        issues.push('⚠️  Taux d\'erreur élevé - Vérifier les logs');
+        issues.push("⚠️  Taux d'erreur élevé - Vérifier les logs");
     }
     if (metrics.http_req_duration?.values.max > 2000) {
         issues.push('⚠️  Pic de latence détecté (>2s) - Vérifier DB/cache');
@@ -199,7 +214,7 @@ function generateDetailedSummary(data) {
     if (issues.length === 0) {
         lines.push('✅ Tous les SLOs sont respectés !');
     } else {
-        issues.forEach(issue => lines.push(issue));
+        issues.forEach((issue) => lines.push(issue));
     }
 
     lines.push('');
@@ -212,4 +227,3 @@ function generateDetailedSummary(data) {
         report: report,
     };
 }
-

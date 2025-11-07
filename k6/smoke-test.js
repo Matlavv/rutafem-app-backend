@@ -1,15 +1,15 @@
-import http from 'k6/http';
 import { check, sleep } from 'k6';
+import http from 'k6/http';
 import { Rate } from 'k6/metrics';
-import { BASE_URL, SLO, ENDPOINTS } from './config.js';
+import { BASE_URL, ENDPOINTS, SLO } from './config.js';
 
 /**
  * SMOKE TEST
- * 
+ *
  * Objectif: Vérifier que l'application fonctionne avec une charge minimale
  * Durée: 1 minute
  * VUs: 5 utilisateurs virtuels constants
- * 
+ *
  * Ce test valide:
  * - Les endpoints critiques répondent
  * - Les temps de réponse sont acceptables
@@ -27,16 +27,16 @@ export const options = {
     // Thresholds basés sur les SLOs
     thresholds: {
         // 95% des requêtes doivent être < 300ms
-        'http_req_duration': [`p(95)<${SLO.p95Duration}`],
+        http_req_duration: [`p(95)<${SLO.p95Duration}`],
 
         // 99% des requêtes doivent être < 500ms
         'http_req_duration{endpoint:rides}': [`p(99)<${SLO.p99Duration}`],
 
         // Moins de 1% d'erreurs
-        'http_req_failed': [`rate<${SLO.errorRate}`],
+        http_req_failed: [`rate<${SLO.errorRate}`],
 
         // Taux d'erreurs custom
-        'errors': [`rate<${SLO.errorRate}`],
+        errors: [`rate<${SLO.errorRate}`],
     },
 
     // Tags pour faciliter l'analyse
@@ -83,8 +83,8 @@ export default function () {
 
 export function handleSummary(data) {
     return {
-        'stdout': textSummary(data, { indent: ' ', enableColors: true }),
-        '/results/smoke-test-summary.json': JSON.stringify(data, null, 2),
+        stdout: textSummary(data, { indent: ' ', enableColors: true }),
+        './k6/results/smoke-test-summary.json': JSON.stringify(data, null, 2),
     };
 }
 
@@ -122,4 +122,3 @@ function textSummary(data, options = {}) {
 
     return lines.join('\n');
 }
-

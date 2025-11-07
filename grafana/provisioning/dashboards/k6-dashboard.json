@@ -1,0 +1,333 @@
+{
+    "uid": "k6-load-testing",
+    "title": "k6 Load Testing Results",
+    "tags": ["k6", "load-testing", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+        {
+            "id": 1,
+            "title": "Virtual Users (VUs)",
+            "type": "timeseries",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+            "targets": [
+                {
+                    "expr": "k6_vus",
+                    "legendFormat": "Active VUs",
+                    "refId": "A"
+                },
+                {
+                    "expr": "k6_vus_max",
+                    "legendFormat": "Max VUs",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 }
+                }
+            },
+            "options": {
+                "legend": { "displayMode": "list", "placement": "bottom" }
+            }
+        },
+        {
+            "id": 2,
+            "title": "Requests Per Second (RPS)",
+            "type": "timeseries",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+            "targets": [
+                {
+                    "expr": "rate(k6_http_reqs_total[1m])",
+                    "legendFormat": "RPS",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "reqps",
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 }
+                }
+            }
+        },
+        {
+            "id": 3,
+            "title": "HTTP Request Duration (p95, p99)",
+            "type": "timeseries",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(k6_http_req_duration_bucket[1m])) by (le))",
+                    "legendFormat": "p95",
+                    "refId": "A"
+                },
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(k6_http_req_duration_bucket[1m])) by (le))",
+                    "legendFormat": "p99",
+                    "refId": "B"
+                },
+                {
+                    "expr": "300",
+                    "legendFormat": "SLO p95 (300ms)",
+                    "refId": "C"
+                },
+                {
+                    "expr": "500",
+                    "legendFormat": "SLO p99 (500ms)",
+                    "refId": "D"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 }
+                },
+                "overrides": [
+                    {
+                        "matcher": { "id": "byName", "options": "SLO p95 (300ms)" },
+                        "properties": [
+                            { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": { "dash": [10, 10], "fill": "dash" }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": { "id": "byName", "options": "SLO p99 (500ms)" },
+                        "properties": [
+                            { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": { "dash": [10, 10], "fill": "dash" }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": 4,
+            "title": "HTTP Failure Rate",
+            "type": "timeseries",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+            "targets": [
+                {
+                    "expr": "100 * (sum(rate(k6_http_reqs_total{expected_response=\"false\"}[1m])) / sum(rate(k6_http_reqs_total[1m])))",
+                    "legendFormat": "Failure Rate %",
+                    "refId": "A"
+                },
+                {
+                    "expr": "1",
+                    "legendFormat": "SLO Threshold (1%)",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent",
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            { "value": null, "color": "green" },
+                            { "value": 1, "color": "red" }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": { "id": "byName", "options": "SLO Threshold (1%)" },
+                        "properties": [
+                            { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": { "dash": [10, 10], "fill": "dash" }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": 5,
+            "title": "HTTP Requests by Status",
+            "type": "timeseries",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+            "targets": [
+                {
+                    "expr": "sum by (status) (rate(k6_http_reqs_total[1m]))",
+                    "legendFormat": "Status {{status}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "reqps",
+                    "color": { "mode": "palette-classic" },
+                    "custom": {
+                        "lineWidth": 2,
+                        "fillOpacity": 10,
+                        "stacking": { "mode": "normal" }
+                    }
+                }
+            }
+        },
+        {
+            "id": 6,
+            "title": "Data Sent/Received",
+            "type": "timeseries",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+            "targets": [
+                {
+                    "expr": "rate(k6_data_sent_total[1m])",
+                    "legendFormat": "Sent",
+                    "refId": "A"
+                },
+                {
+                    "expr": "rate(k6_data_received_total[1m])",
+                    "legendFormat": "Received",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "Bps",
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 }
+                }
+            }
+        },
+        {
+            "id": 7,
+            "title": "Checks Success Rate",
+            "type": "gauge",
+            "gridPos": { "h": 8, "w": 6, "x": 0, "y": 24 },
+            "targets": [
+                {
+                    "expr": "100 * (sum(rate(k6_checks_total{check_status=\"pass\"}[5m])) / sum(rate(k6_checks_total[5m])))",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent",
+                    "min": 0,
+                    "max": 100,
+                    "color": { "mode": "thresholds" },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            { "value": null, "color": "red" },
+                            { "value": 95, "color": "yellow" },
+                            { "value": 99, "color": "green" }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            }
+        },
+        {
+            "id": 8,
+            "title": "Iterations",
+            "type": "stat",
+            "gridPos": { "h": 8, "w": 6, "x": 6, "y": 24 },
+            "targets": [
+                {
+                    "expr": "k6_iterations_total",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": { "mode": "thresholds" },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{ "value": null, "color": "green" }]
+                    }
+                }
+            },
+            "options": {
+                "graphMode": "area",
+                "colorMode": "value"
+            }
+        },
+        {
+            "id": 9,
+            "title": "Total HTTP Requests",
+            "type": "stat",
+            "gridPos": { "h": 8, "w": 6, "x": 12, "y": 24 },
+            "targets": [
+                {
+                    "expr": "k6_http_reqs_total",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": { "mode": "thresholds" },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{ "value": null, "color": "blue" }]
+                    }
+                }
+            },
+            "options": {
+                "graphMode": "area",
+                "colorMode": "value"
+            }
+        },
+        {
+            "id": 10,
+            "title": "Test Duration",
+            "type": "stat",
+            "gridPos": { "h": 8, "w": 6, "x": 18, "y": 24 },
+            "targets": [
+                {
+                    "expr": "time() - (k6_iteration_duration_count > 0)",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "color": { "mode": "thresholds" },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{ "value": null, "color": "green" }]
+                    }
+                }
+            },
+            "options": {
+                "graphMode": "none",
+                "colorMode": "value"
+            }
+        }
+    ],
+    "time": {
+        "from": "now-15m",
+        "to": "now"
+    },
+    "timepicker": {
+        "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"]
+    },
+    "annotations": {
+        "list": []
+    },
+    "links": [],
+    "templating": {
+        "list": []
+    }
+}
