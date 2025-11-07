@@ -16,23 +16,23 @@ headers {
 
 body:json {
   {
-      "startingAddress": "123 Rue de Paris",
-      "arrivalAddress": "456 Avenue de Lyon",
-      "departureCity": "Paris",
-      "arrivalCity": "Lyon",
+      "startingAddress": "2 avenue du caca",
+      "arrivalAddress": "3 rue du pipi",
+      "departureCity": "Pipi town",
+      "arrivalCity": "Caca city",
       "departureDatetime": "2025-11-10T09:00:00Z",
       "arrivalDatetime": "2025-11-10T14:00:00Z",
       "price": 35,
-      "availableSeats": 3,
-      "vehicleId": "vehicle-123"
+      "availableSeats": 1,
+      "vehicleId": "peugeot 206"
   }
-}
-
-settings {
-  encodeUrl: true
 }
 
 vars:post-response {
   RIDE_ID: res.body.data.id
 }
 
+settings {
+  encodeUrl: true
+  timeout: 0
+}

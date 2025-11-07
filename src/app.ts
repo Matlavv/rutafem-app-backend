@@ -5,9 +5,13 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { prisma } from './lib/prisma';
 import { errorHandler } from './middleware/errorHandler';
+import { loggerMiddleware } from './middleware/logger.middleware';
+import { metricsMiddleware, register } from './middleware/metrics.middleware';
+import { apiLimiter } from './middleware/rateLimit.middleware';
 import authRoutes from './routes/auth.routes';
 import profileRoutes from './routes/profile.routes';
 import rideRoutes from './routes/ride.routes';
+import testRoutes from './routes/test.routes';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 const app = express();
@@ -23,6 +27,18 @@ app.use(
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(loggerMiddleware); // request_id + logs JSON
+app.use(metricsMiddleware);
+
+// rate limiting (disabled for k6 tests)
+if (process.env.DISABLE_RATE_LIMIT !== 'true') {
+    app.use('/api/', apiLimiter);
+}
+
+app.get('/metrics', async (req, res) => {
+    res.setHeader('Content-Type', register.contentType);
+    res.send(await register.metrics());
+});
 
 app.use(
     '/api-docs',
@@ -43,6 +59,7 @@ app.get('/', (req, res) => res.json({ status: 'ok', message: 'RutaFem API' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/rides', rideRoutes);
+app.use('/api/test', testRoutes); // TODO delete
 
 app.use(errorHandler);
 
