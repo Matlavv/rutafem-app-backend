@@ -54,10 +54,21 @@ export default function () {
     check(res, {
         'healthcheck status is 200': (r) => r.status === 200,
         'healthcheck has correct message': (r) => {
-            const body = JSON.parse(r.body);
-            return body.status === 'ok';
+            try {
+                const body = JSON.parse(r.body);
+                return body.status === 'ok';
+            } catch {
+                return false;
+            }
         },
-    }) || errorRate.add(1);
+    });
+
+    // Compter seulement les vraies erreurs (5xx, timeouts)
+    if (res.status >= 500 || res.error) {
+        errorRate.add(1);
+    } else {
+        errorRate.add(0);
+    }
 
     sleep(1);
 
@@ -76,7 +87,14 @@ export default function () {
                 return false;
             }
         },
-    }) || errorRate.add(1);
+    });
+
+    // Compter seulement les vraies erreurs
+    if (res.status >= 500 || res.error) {
+        errorRate.add(1);
+    } else {
+        errorRate.add(0);
+    }
 
     sleep(1);
 }

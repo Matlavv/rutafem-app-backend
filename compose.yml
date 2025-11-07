@@ -11,6 +11,8 @@ services:
       - /app/node_modules
     env_file:
       - ./src/.env
+    environment:
+      - DISABLE_RATE_LIMIT=${DISABLE_RATE_LIMIT:-false}
     networks:
       - app-network
       - monitoring

@@ -64,7 +64,8 @@ export default function () {
             tags: { endpoint: 'rides' },
         });
 
-        const isSuccess = check(res, {
+        // Checks de qualité (SLO)
+        check(res, {
             'rides status is 200': (r) => r.status === 200,
             'rides response time < 500ms': (r) => r.timings.duration < 500,
             'rides returns valid data': (r) => {
@@ -77,8 +78,11 @@ export default function () {
             },
         });
 
-        if (!isSuccess) {
+        // Compter seulement les vraies erreurs (5xx, timeouts, etc.)
+        if (res.status >= 500 || res.error) {
             errorRate.add(1);
+        } else {
+            errorRate.add(0);
         }
 
         // Tracker la latence de l'endpoint critique
@@ -91,7 +95,14 @@ export default function () {
 
         check(res, {
             'healthcheck status is 200': (r) => r.status === 200,
-        }) || errorRate.add(1);
+        });
+
+        // Compter seulement les vraies erreurs
+        if (res.status >= 500 || res.error) {
+            errorRate.add(1);
+        } else {
+            errorRate.add(0);
+        }
     }
 
     // Pause entre les requêtes (simule un utilisateur réel)

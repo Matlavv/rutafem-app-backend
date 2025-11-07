@@ -257,9 +257,23 @@ npm run test:errors
 
 #### Configuration
 
-Le rate limiting est **automatiquement désactivé** pour les tests k6 via `DISABLE_RATE_LIMIT=true` dans le service k6.
+Le rate limiting est **automatiquement désactivé** pour les tests k6.l
 
-📚 **Guide complet** : [K6-PROMETHEUS-GUIDE.md](K6-PROMETHEUS-GUIDE.md)
+```bash
+npm run test:smoke
+npm run test:stress
+```
+
+📚 **Guide complet** : [K6-CONFIG-FINALE.md](K6-CONFIG-FINALE.md)
+
+#### Résultats
+
+Après chaque test, les résultats sont disponibles dans :
+
+-   `k6/results/smoke-test-summary.json` : Données JSON complètes
+-   `k6/results/stress-test-summary.json` : Données JSON complètes
+-   `k6/results/stress-test-report.txt` : Rapport texte détaillé
+-   Grafana Dashboard : Visualisation temps réel
 
 ### Corrélation des logs
 
