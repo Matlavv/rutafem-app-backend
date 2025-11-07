@@ -6,40 +6,36 @@ import { BASE_URL, ENDPOINTS, SLO } from './config.js';
 /**
  * SMOKE TEST
  *
- * Objectif: Vérifier que l'application fonctionne avec une charge minimale
- * Durée: 1 minute
- * VUs: 5 utilisateurs virtuels constants
+ * Objective: Verify that the application works with minimal load
+ * Duration: 1 minute
+ * VUs: 5 users
  *
- * Ce test valide:
- * - Les endpoints critiques répondent
- * - Les temps de réponse sont acceptables
- * - Pas d'erreurs serveur
+ * This test validates:
+ * - Critical endpoints respond
+ * - Response times are acceptable
+ * - No server errors
  */
 
-// Métrique personnalisée pour traquer les erreurs
 const errorRate = new Rate('errors');
 
 export const options = {
-    // Configuration du test
-    vus: 5, // 5 utilisateurs virtuels
-    duration: '1m', // pendant 1 minute
+    vus: 5, // 5 users
+    duration: '1m', // for 1 minute
 
-    // Thresholds basés sur les SLOs
     thresholds: {
-        // 95% des requêtes doivent être < 300ms
+        // 95% of requests should be < 300ms
         http_req_duration: [`p(95)<${SLO.p95Duration}`],
 
-        // 99% des requêtes doivent être < 500ms
+        // 99% of requests should be < 500ms
         'http_req_duration{endpoint:rides}': [`p(99)<${SLO.p99Duration}`],
 
-        // Moins de 1% d'erreurs
+        // Less than 1% of errors
         http_req_failed: [`rate<${SLO.errorRate}`],
 
-        // Taux d'erreurs custom
+        // Custom error rate
         errors: [`rate<${SLO.errorRate}`],
     },
 
-    // Tags pour faciliter l'analyse
     tags: {
         test_type: 'smoke',
     },
@@ -63,7 +59,6 @@ export default function () {
         },
     });
 
-    // Compter seulement les vraies erreurs (5xx, timeouts)
     if (res.status >= 500 || res.error) {
         errorRate.add(1);
     } else {
@@ -72,7 +67,7 @@ export default function () {
 
     sleep(1);
 
-    // 2. Liste des trajets (endpoint critique)
+    // 2. Rides endpoint
     res = http.get(`${BASE_URL}${ENDPOINTS.rides}`, {
         tags: { endpoint: 'rides' },
     });
@@ -89,7 +84,7 @@ export default function () {
         },
     });
 
-    // Compter seulement les vraies erreurs
+    // Only count real errors (5xx, timeouts)
     if (res.status >= 500 || res.error) {
         errorRate.add(1);
     } else {
@@ -106,7 +101,6 @@ export function handleSummary(data) {
     };
 }
 
-// Helper pour le résumé texte
 function textSummary(data, options = {}) {
     const { indent = '', enableColors = false } = options;
     const lines = [];
@@ -115,7 +109,6 @@ function textSummary(data, options = {}) {
     lines.push(`${indent}==================`);
     lines.push('');
 
-    // Metrics
     const metrics = data.metrics;
     if (metrics.http_reqs) {
         lines.push(`${indent}Total Requests: ${metrics.http_reqs.values.count}`);

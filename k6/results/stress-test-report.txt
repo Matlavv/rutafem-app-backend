@@ -5,31 +5,31 @@
 📊 VUE D'ENSEMBLE
 ─────────────────
 VUs max: 100
-Total requêtes: 15496
-RPS moyen: 38.49
+Total requêtes: 16482
+RPS moyen: 54.91
 
 ⏱️  TEMPS DE RÉPONSE
 ─────────────────────
-Min: 0.13ms
-Avg: 218.94ms
-Med: 61.49ms
-p90: 148.19ms
-p95: 249.82ms ✅
-Max: 115299.78ms
+Min: 0.12ms
+Avg: 48.16ms
+Med: 60.41ms
+p90: 70.58ms
+p95: 79.52ms ✅
+Max: 1070.63ms
 
 🚗 ENDPOINT /api/rides (CRITIQUE)
 ───────────────────────────────────
-Avg: 310.35ms
-p95: 280.00ms ✅
+Avg: 68.03ms
+p95: 86.18ms ✅
 
 ❗ ERREURS
 ──────────
-Taux d'échec: 0.11% ✅
-Requêtes échouées: 15479
-Taux d'erreur: 0.11%
+Taux d'échec: 0.00% ✅
+Requêtes échouées: 16482
+Taux d'erreur: 0.00%
 
 💡 RECOMMANDATIONS
 ───────────────────
-⚠️  Pic de latence détecté (>2s) - Vérifier DB/cache
+✅ Tous les SLOs sont respectés !
 
 =====================================

@@ -6,46 +6,43 @@ import { BASE_URL, ENDPOINTS, SLO } from './config.js';
 /**
  * STRESS TEST
  *
- * Objectif: Identifier les limites du système et les goulots d'étranglement
- * Durée: ~5 minutes
+ * Objective: Identify system limits and bottlenecks
+ * Duration: ~5 minutes
  *
- * Scénario par étapes:
- * 1. Ramp-up: 0 -> 50 VUs en 1min (montée progressive)
- * 2. Plateau: 50 VUs pendant 2min (charge soutenue)
- * 3. Spike: 50 -> 100 VUs en 30s (pic de charge)
- * 4. Peak: 100 VUs pendant 1min (charge maximale)
- * 5. Ramp-down: 100 -> 0 VUs en 30s (descente)
+ * Step-by-step scenario:
+ * 1. Ramp-up: 0 -> 50 VUs in 1min (progressive ramp-up)
+ * 2. Plateau: 50 VUs for 2min (sustained load)
+ * 3. Spike: 50 -> 100 VUs in 30s (quick spike)
+ * 4. Peak: 100 VUs for 1min (maximum load)
+ * 5. Ramp-down: 100 -> 0 VUs in 30s (ramp-down)
  */
 
-// Métriques personnalisées
 const errorRate = new Rate('errors');
 const ridesLatency = new Trend('rides_latency');
 
 export const options = {
-    // Test par étapes
     stages: [
-        { duration: '1m', target: 50 }, // Montée progressive
-        { duration: '2m', target: 50 }, // Charge soutenue
-        { duration: '30s', target: 100 }, // Pic rapide
-        { duration: '1m', target: 100 }, // Charge max
-        { duration: '30s', target: 0 }, // Descente
+        { duration: '1m', target: 50 }, // Progressive ramp-up
+        { duration: '2m', target: 50 }, // Sustained load
+        { duration: '30s', target: 100 }, // Quick spike
+        { duration: '1m', target: 100 }, // Maximum load
+        { duration: '30s', target: 0 }, // Ramp-down
     ],
 
-    // Thresholds basés sur les SLOs
     thresholds: {
-        // Temps de réponse p95 < 300ms
+        // p95 response time < 300ms
         http_req_duration: [`p(95)<${SLO.p95Duration}`],
 
-        // Temps de réponse p99 < 500ms pour l'endpoint rides
+        // p99 response time < 500ms for the rides endpoint
         'http_req_duration{endpoint:rides}': [`p(99)<${SLO.p99Duration}`],
 
-        // Moins de 1% d'échecs
+        // Less than 1% of failures
         http_req_failed: [`rate<${SLO.errorRate}`],
 
-        // Taux d'erreurs < 1%
+        // Error rate < 1%
         errors: [`rate<${SLO.errorRate}`],
 
-        // 95% des requêtes rides < 300ms
+        // 95% of rides requests < 300ms
         rides_latency: [`p(95)<${SLO.p95Duration}`],
     },
 
@@ -55,16 +52,16 @@ export const options = {
 };
 
 export default function () {
-    // Scénario réaliste: 70% reads, 30% healthcheck
+    // Realistic scenario: 70% reads, 30% healthcheck
     const randomValue = Math.random();
 
     if (randomValue < 0.7) {
-        // 70% - Consulter la liste des trajets (endpoint critique)
+        // 70% - Read the list of rides (critical endpoint)
         const res = http.get(`${BASE_URL}${ENDPOINTS.rides}`, {
             tags: { endpoint: 'rides' },
         });
 
-        // Checks de qualité (SLO)
+        // Quality checks (SLO)
         check(res, {
             'rides status is 200': (r) => r.status === 200,
             'rides response time < 500ms': (r) => r.timings.duration < 500,
@@ -78,14 +75,14 @@ export default function () {
             },
         });
 
-        // Compter seulement les vraies erreurs (5xx, timeouts, etc.)
+        // Only count real errors (5xx, timeouts, etc.)
         if (res.status >= 500 || res.error) {
             errorRate.add(1);
         } else {
             errorRate.add(0);
         }
 
-        // Tracker la latence de l'endpoint critique
+        // Track the latency of the critical endpoint
         ridesLatency.add(res.timings.duration);
     } else {
         // 30% - Healthcheck
@@ -97,7 +94,7 @@ export default function () {
             'healthcheck status is 200': (r) => r.status === 200,
         });
 
-        // Compter seulement les vraies erreurs
+        // Only count real errors (5xx, timeouts, etc.)
         if (res.status >= 500 || res.error) {
             errorRate.add(1);
         } else {
@@ -105,7 +102,7 @@ export default function () {
         }
     }
 
-    // Pause entre les requêtes (simule un utilisateur réel)
+    // Pause between requests (simulate a real user)
     sleep(1);
 }
 
@@ -127,7 +124,6 @@ function generateDetailedSummary(data) {
 
     const metrics = data.metrics;
 
-    // Vue d'ensemble
     lines.push("📊 VUE D'ENSEMBLE");
     lines.push('─────────────────');
     if (metrics.vus) {
@@ -140,7 +136,6 @@ function generateDetailedSummary(data) {
     }
     lines.push('');
 
-    // Temps de réponse
     lines.push('⏱️  TEMPS DE RÉPONSE');
     lines.push('─────────────────────');
     if (metrics.http_req_duration && metrics.http_req_duration.values) {
@@ -192,7 +187,7 @@ function generateDetailedSummary(data) {
         lines.push('');
     }
 
-    // Erreurs
+    // Errors
     lines.push('❗ ERREURS');
     lines.push('──────────');
     if (metrics.http_req_failed) {
@@ -207,7 +202,7 @@ function generateDetailedSummary(data) {
     }
     lines.push('');
 
-    // Recommandations
+    // Recommendations
     lines.push('💡 RECOMMANDATIONS');
     lines.push('───────────────────');
 
