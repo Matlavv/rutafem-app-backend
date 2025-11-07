@@ -103,8 +103,8 @@ export function handleSummary(data) {
 
     return {
         stdout: summary.text,
-        './k6/results/stress-test-summary.json': JSON.stringify(data, null, 2),
-        './k6/results/stress-test-report.txt': summary.report,
+        '/results/stress-test-summary.json': JSON.stringify(data, null, 2),
+        '/results/stress-test-report.txt': summary.report,
     };
 }
 

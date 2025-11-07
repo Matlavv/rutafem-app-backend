@@ -84,7 +84,7 @@ export default function () {
 export function handleSummary(data) {
     return {
         stdout: textSummary(data, { indent: ' ', enableColors: true }),
-        './k6/results/smoke-test-summary.json': JSON.stringify(data, null, 2),
+        '/results/smoke-test-summary.json': JSON.stringify(data, null, 2),
     };
 }
 
