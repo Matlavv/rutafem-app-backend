@@ -44,7 +44,7 @@ smoke: ## Exécuter le smoke test (5 VUs, 1min) avec export Prometheus
 	@echo "$(YELLOW)⏳ Attente du backend...$(NC)"
 	@sleep 5
 	@echo "$(BLUE)📊 Lancement du test avec export Prometheus...$(NC)"
-	@DISABLE_RATE_LIMIT=true docker-compose run --rm k6 run --out experimental-prometheus-rw /scripts/smoke-test.js
+	@DISABLE_RATE_LIMIT=true docker-compose run --rm k6 run /scripts/smoke-test.j
 	@echo "$(GREEN)✅ Smoke test terminé$(NC)"
 	@echo "$(BLUE)📊 Résultats dans: k6/results/smoke-test-summary.json$(NC)"
 	@echo "$(BLUE)📈 Visualiser dans Grafana: http://localhost:3001$(NC)"
@@ -59,7 +59,7 @@ stress: ## Exécuter le stress test (0->100 VUs, ~5min) avec export Prometheus
 	@echo "$(BLUE)📊 Lancement du test avec export Prometheus...$(NC)"
 	@echo "$(YELLOW)⚠️  Ce test va durer ~5 minutes$(NC)"
 	@echo "$(BLUE)📈 Ouvrez Grafana pendant le test: http://localhost:3001$(NC)"
-	@DISABLE_RATE_LIMIT=true docker-compose run --rm k6 run --out experimental-prometheus-rw /scripts/stress-test.js
+	@DISABLE_RATE_LIMIT=true docker-compose run --rm k6 run /scripts/stress-test.js
 	@echo "$(GREEN)✅ Stress test terminé$(NC)"
 	@echo "$(BLUE)📊 Résultats dans: k6/results/stress-test-summary.json$(NC)"
 	@echo "$(BLUE)📄 Rapport dans: k6/results/stress-test-report.txt$(NC)"
