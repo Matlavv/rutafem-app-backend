@@ -1,5 +1,6 @@
 import pino from 'pino';
 import { prisma } from '../lib/prisma';
+import { cacheKey, invalidateCache, redis } from '../lib/redis';
 import { CreateRideDto, GetRidesQuery, UpdateRideDto } from '../schemas/ride.schema';
 
 const logger = pino({ level: 'info' });
@@ -55,6 +56,12 @@ export class RideService {
                 select: rideListSelect,
             });
             logger.info({ rideId: ride.id, profileId }, 'Ride created with driver');
+
+            // Invalidate cache for rides list
+            await invalidateCache('rides:*').catch((err) => {
+                logger.warn({ err }, 'Failed to invalidate cache after ride creation');
+            });
+
             return ride;
         } catch (error) {
             logger.error({ error }, 'Failed to create ride');
@@ -156,6 +163,17 @@ export class RideService {
                 select: rideListSelect,
             });
             logger.info({ rideId: id, profileId }, 'Ride updated');
+
+            // Invalidate cache for this ride and rides list
+            await Promise.all([
+                redis.del(cacheKey.ride(id)).catch((err) => {
+                    logger.warn({ err, rideId: id }, 'Failed to invalidate ride cache');
+                }),
+                invalidateCache('rides:*').catch((err) => {
+                    logger.warn({ err }, 'Failed to invalidate rides list cache');
+                }),
+            ]);
+
             return ride;
         } catch (error) {
             logger.error({ error, rideId: id }, 'Failed to update ride');
@@ -175,6 +193,16 @@ export class RideService {
 
             await prisma.ride.delete({ where: { id } });
             logger.info({ rideId: id, profileId }, 'Ride deleted');
+
+            // Invalidate cache for this ride and rides list
+            await Promise.all([
+                redis.del(cacheKey.ride(id)).catch((err) => {
+                    logger.warn({ err, rideId: id }, 'Failed to invalidate ride cache');
+                }),
+                invalidateCache('rides:*').catch((err) => {
+                    logger.warn({ err }, 'Failed to invalidate rides list cache');
+                }),
+            ]);
         } catch (error) {
             logger.error({ error, rideId: id }, 'Failed to delete ride');
             throw error;

@@ -3,6 +3,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { prisma } from './lib/prisma';
+import { redis } from './lib/redis';
 import { errorHandler } from './middleware/errorHandler';
 import { logger, loggerMiddleware } from './middleware/logger.middleware';
 import { metricsMiddleware, register } from './middleware/metrics.middleware';
@@ -78,6 +79,8 @@ checkDatabaseConnection().then(() => {
 });
 
 process.on('SIGINT', async () => {
+    logger.info('Shutting down');
     await prisma.$disconnect();
+    await redis.quit();
     process.exit();
 });

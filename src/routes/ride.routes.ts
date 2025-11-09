@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { rideController } from '../controllers/ride.controller';
 import { requireAuth } from '../middleware/auth.middleware';
+import { cacheMiddleware } from '../middleware/cache.middleware';
 
 const router = Router();
 
@@ -247,7 +248,7 @@ router.delete('/:id', requireAuth, (req, res, next) => rideController.delete(req
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', (req, res, next) => rideController.findAll(req, res, next));
+router.get('/', cacheMiddleware(60), (req, res, next) => rideController.findAll(req, res, next));
 
 /**
  * @swagger
@@ -283,6 +284,8 @@ router.get('/', (req, res, next) => rideController.findAll(req, res, next));
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', (req, res, next) => rideController.findById(req, res, next));
+router.get('/:id', cacheMiddleware(120), (req, res, next) =>
+    rideController.findById(req, res, next),
+);
 
 export default router;

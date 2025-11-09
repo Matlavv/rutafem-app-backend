@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { profileController } from '../controllers/profile.controller';
 import { requireAuth } from '../middleware/auth.middleware';
+import { cacheMiddleware } from '../middleware/cache.middleware';
 
 const router = Router();
 
@@ -220,7 +221,7 @@ router.post('/change-password', requireAuth, (req, res, next) =>
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', (req, res, next) => profileController.findAll(req, res, next));
+router.get('/', cacheMiddleware(60), (req, res, next) => profileController.findAll(req, res, next));
 
 /**
  * @swagger

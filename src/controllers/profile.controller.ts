@@ -5,7 +5,7 @@ import { authService } from '../services/auth.service';
 import { profileService } from '../services/profile.service';
 
 export class ProfileController {
-    // Get all profiles (public) avec pagination et filtres
+    // Get all profiles (public)
     async findAll(req: Request, res: Response, next: NextFunction) {
         try {
             const query = getProfilesQuerySchema.parse(req.query);

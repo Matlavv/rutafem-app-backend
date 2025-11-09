@@ -109,10 +109,27 @@ services:
     depends_on:
       - loki
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 volumes:
   prometheus-data:
   grafana-data:
   loki-data:
+  redis-data:
 
 networks:
   app-network:
