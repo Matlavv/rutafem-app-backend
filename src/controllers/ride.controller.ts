@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { createRideSchema, updateRideSchema } from '../schemas/ride.schema';
+import { createRideSchema, getRidesQuerySchema, updateRideSchema } from '../schemas/ride.schema';
 import { profileService } from '../services/profile.service';
 import { rideService } from '../services/ride.service';
 
@@ -31,8 +31,19 @@ export class RideController {
 
     async findAll(req: Request, res: Response, next: NextFunction) {
         try {
-            const rides = await rideService.findAll();
-            res.json({ success: true, data: rides });
+            const query = getRidesQuerySchema.parse(req.query);
+            const result = await rideService.findAll(query);
+            res.json({
+                success: true,
+                data: result.data,
+                pagination: {
+                    page: result.page,
+                    limit: result.limit,
+                    totalCount: result.totalCount,
+                    totalPages:
+                        result.limit === -1 ? 1 : Math.ceil(result.totalCount / result.limit),
+                },
+            });
         } catch (error) {
             next(error);
         }

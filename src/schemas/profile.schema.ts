@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { paginationSchema } from './pagination.schema';
 
 export const updateProfileSchema = z.object({
     firstname: z.string().min(1).max(100).optional(),
@@ -17,4 +18,15 @@ export const updateProfileSchema = z.object({
     isDriverVerified: z.boolean().optional(),
 });
 
+// filter for get profiles
+export const profileFiltersSchema = z.object({
+    isVerified: z.coerce.boolean().optional(),
+    isDriverVerified: z.coerce.boolean().optional(),
+    username: z.string().optional(), // Recherche partielle
+});
+
+export const getProfilesQuerySchema = paginationSchema.merge(profileFiltersSchema);
+
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type ProfileFilters = z.infer<typeof profileFiltersSchema>;
+export type GetProfilesQuery = z.infer<typeof getProfilesQuerySchema>;

@@ -1,16 +1,26 @@
 import { NextFunction, Request, Response } from 'express';
 import { changePasswordSchema } from '../schemas/auth.schema';
-import { updateProfileSchema } from '../schemas/profile.schema';
+import { getProfilesQuerySchema, updateProfileSchema } from '../schemas/profile.schema';
 import { authService } from '../services/auth.service';
 import { profileService } from '../services/profile.service';
 
 export class ProfileController {
-    // TODO protect route
-    // Get all profiles (public)
+    // Get all profiles (public) avec pagination et filtres
     async findAll(req: Request, res: Response, next: NextFunction) {
         try {
-            const profiles = await profileService.findAll();
-            res.json({ success: true, data: profiles });
+            const query = getProfilesQuerySchema.parse(req.query);
+            const result = await profileService.findAll(query);
+            res.json({
+                success: true,
+                data: result.data,
+                pagination: {
+                    page: result.page,
+                    limit: result.limit,
+                    totalCount: result.totalCount,
+                    totalPages:
+                        result.limit === -1 ? 1 : Math.ceil(result.totalCount / result.limit),
+                },
+            });
         } catch (error) {
             next(error);
         }

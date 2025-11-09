@@ -151,11 +151,41 @@ router.post('/change-password', requireAuth, (req, res, next) =>
  * @swagger
  * /api/profiles:
  *   get:
- *     summary: Get all profiles (public)
+ *     summary: Get all profiles with pagination and filters (public)
  *     tags: [Profile]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number (starts at 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: -1
+ *           default: 50
+ *         description: Number of items per page. Use -1 to get all items (no pagination)
+ *       - in: query
+ *         name: isVerified
+ *         schema:
+ *           type: boolean
+ *         description: Filter by verification status
+ *       - in: query
+ *         name: isDriverVerified
+ *         schema:
+ *           type: boolean
+ *         description: Filter by driver verification status
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *         description: Search by username (partial match, case-insensitive)
  *     responses:
  *       200:
- *         description: List of all profiles
+ *         description: List of profiles with pagination metadata
  *         content:
  *           application/json:
  *             schema:
@@ -168,6 +198,27 @@ router.post('/change-password', requireAuth, (req, res, next) =>
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Profile'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 50
+ *                     totalCount:
+ *                       type: integer
+ *                       example: 150
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 3
+ *       400:
+ *         description: Invalid query parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/', (req, res, next) => profileController.findAll(req, res, next));
 

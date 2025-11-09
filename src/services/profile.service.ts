@@ -1,34 +1,52 @@
 import { prisma } from '../lib/prisma';
-import { UpdateProfileInput } from '../schemas/profile.schema';
+import { GetProfilesQuery, UpdateProfileInput } from '../schemas/profile.schema';
+
+// select for profile list, get only necessary data
+const profileListSelect = {
+    id: true,
+    userId: true,
+    firstname: true,
+    lastname: true,
+    username: true,
+    profileImageUrl: true,
+    isVerified: true,
+    isDriverVerified: true,
+    createdAt: true,
+    user: {
+        select: {
+            email: true,
+            emailVerified: true,
+        },
+    },
+};
 
 export class ProfileService {
-    // Get all profiles
-    async findAll() {
-        return prisma.profile.findMany({
-            select: {
-                id: true,
-                userId: true,
-                firstname: true,
-                lastname: true,
-                username: true,
-                phoneNumber: true,
-                profileImageUrl: true,
-                experience: true,
-                biography: true,
-                favoriteMusic: true,
-                birthDate: true,
-                isVerified: true,
-                isDriverVerified: true,
-                createdAt: true,
-                updatedAt: true,
-                user: {
-                    select: {
-                        email: true,
-                        emailVerified: true,
-                    },
-                },
-            },
-        });
+    // Get all profiles with pagination and filters
+    async findAll(query: GetProfilesQuery) {
+        const { page, limit, ...filters } = query;
+        const skip = limit === -1 ? undefined : (page - 1) * limit;
+        const take = limit === -1 ? undefined : limit;
+
+        // add filters with WHERE query
+        const where: any = {};
+        if (filters.isVerified !== undefined) where.isVerified = filters.isVerified;
+        if (filters.isDriverVerified !== undefined)
+            where.isDriverVerified = filters.isDriverVerified;
+        if (filters.username) where.username = { contains: filters.username, mode: 'insensitive' };
+
+        // parallel queries for data + count
+        const [profiles, totalCount] = await Promise.all([
+            prisma.profile.findMany({
+                where,
+                select: profileListSelect,
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take,
+            }),
+            limit === -1 ? Promise.resolve(0) : prisma.profile.count({ where }),
+        ]);
+
+        return { data: profiles, totalCount, page, limit };
     }
 
     // Get profile by ID
@@ -36,27 +54,13 @@ export class ProfileService {
         const profile = await prisma.profile.findUnique({
             where: { id },
             select: {
-                id: true,
-                userId: true,
-                firstname: true,
-                lastname: true,
-                username: true,
+                ...profileListSelect,
                 phoneNumber: true,
-                profileImageUrl: true,
                 experience: true,
                 biography: true,
                 favoriteMusic: true,
                 birthDate: true,
-                isVerified: true,
-                isDriverVerified: true,
-                createdAt: true,
                 updatedAt: true,
-                user: {
-                    select: {
-                        email: true,
-                        emailVerified: true,
-                    },
-                },
             },
         });
 

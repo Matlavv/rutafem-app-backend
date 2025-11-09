@@ -145,11 +145,74 @@ router.delete('/:id', requireAuth, (req, res, next) => rideController.delete(req
  * @swagger
  * /api/rides:
  *   get:
- *     summary: Get all rides (public)
+ *     summary: Get all rides with pagination and filters (public)
  *     tags: [Rides]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number (starts at 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: -1
+ *           default: 50
+ *         description: Number of items per page. Use -1 to get all items (no pagination)
+ *       - in: query
+ *         name: departureCity
+ *         schema:
+ *           type: string
+ *         description: Filter by departure city
+ *       - in: query
+ *         name: arrivalCity
+ *         schema:
+ *           type: string
+ *         description: Filter by arrival city
+ *       - in: query
+ *         name: departureDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *           example: "2025-01-15"
+ *         description: Filter by departure date (YYYY-MM-DD format, without time)
+ *       - in: query
+ *         name: arrivalDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *           example: "2025-01-15"
+ *         description: Filter by arrival date (YYYY-MM-DD format, without time)
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Maximum price filter
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Minimum price filter
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, confirmed, completed, cancelled]
+ *         description: Filter by ride status
+ *       - in: query
+ *         name: minAvailableSeats
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Minimum number of available seats
  *     responses:
  *       200:
- *         description: List of all rides
+ *         description: List of rides with pagination metadata
  *         content:
  *           application/json:
  *             schema:
@@ -162,6 +225,27 @@ router.delete('/:id', requireAuth, (req, res, next) => rideController.delete(req
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Ride'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 50
+ *                     totalCount:
+ *                       type: integer
+ *                       example: 258
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 6
+ *       400:
+ *         description: Invalid query parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/', (req, res, next) => rideController.findAll(req, res, next));
 

@@ -1,8 +1,39 @@
 import pino from 'pino';
 import { prisma } from '../lib/prisma';
-import { CreateRideDto, UpdateRideDto } from '../schemas/ride.schema';
+import { CreateRideDto, GetRidesQuery, UpdateRideDto } from '../schemas/ride.schema';
 
 const logger = pino({ level: 'info' });
+
+// select for ride list, get only necessary data
+const rideListSelect = {
+    id: true,
+    startingAddress: true,
+    arrivalAddress: true,
+    departureCity: true,
+    arrivalCity: true,
+    departureDatetime: true,
+    arrivalDatetime: true,
+    price: true,
+    status: true,
+    availableSeats: true,
+    vehicleId: true,
+    createdAt: true,
+    participants: {
+        select: {
+            id: true,
+            driver: true,
+            profile: {
+                select: {
+                    id: true,
+                    firstname: true,
+                    lastname: true,
+                    username: true,
+                    profileImageUrl: true,
+                },
+            },
+        },
+    },
+};
 
 export class RideService {
     // Create ride with driver (via profileId)
@@ -21,21 +52,7 @@ export class RideService {
                         },
                     },
                 },
-                include: {
-                    participants: {
-                        include: {
-                            profile: {
-                                select: {
-                                    id: true,
-                                    firstname: true,
-                                    lastname: true,
-                                    username: true,
-                                    profileImageUrl: true,
-                                },
-                            },
-                        },
-                    },
-                },
+                select: rideListSelect,
             });
             logger.info({ rideId: ride.id, profileId }, 'Ride created with driver');
             return ride;
@@ -45,28 +62,52 @@ export class RideService {
         }
     }
 
-    async findAll() {
+    async findAll(query: GetRidesQuery) {
         try {
-            const rides = await prisma.ride.findMany({
-                include: {
-                    participants: {
-                        include: {
-                            profile: {
-                                select: {
-                                    id: true,
-                                    firstname: true,
-                                    lastname: true,
-                                    username: true,
-                                    profileImageUrl: true,
-                                },
-                            },
-                        },
-                    },
-                },
-                orderBy: { departureDatetime: 'asc' },
-            });
-            logger.info({ count: rides.length }, 'Rides fetched');
-            return rides;
+            const { page, limit, ...filters } = query;
+            const skip = limit === -1 ? undefined : (page - 1) * limit;
+            const take = limit === -1 ? undefined : limit;
+
+            // add filters with WHERE query
+            const where: any = {};
+            if (filters.departureCity) where.departureCity = filters.departureCity;
+            if (filters.arrivalCity) where.arrivalCity = filters.arrivalCity;
+            if (filters.status) where.status = filters.status;
+            if (filters.maxPrice) where.price = { ...where.price, lte: filters.maxPrice };
+            if (filters.minPrice) where.price = { ...where.price, gte: filters.minPrice };
+            if (filters.minAvailableSeats)
+                where.availableSeats = { gte: filters.minAvailableSeats };
+
+            // add filters for dates (without time)
+            if (filters.departureDate) {
+                const startDate = new Date(filters.departureDate);
+                startDate.setHours(0, 0, 0, 0);
+                const endDate = new Date(filters.departureDate);
+                endDate.setHours(23, 59, 59, 999);
+                where.departureDatetime = { gte: startDate, lte: endDate };
+            }
+            if (filters.arrivalDate) {
+                const startDate = new Date(filters.arrivalDate);
+                startDate.setHours(0, 0, 0, 0);
+                const endDate = new Date(filters.arrivalDate);
+                endDate.setHours(23, 59, 59, 999);
+                where.arrivalDatetime = { gte: startDate, lte: endDate };
+            }
+
+            // parallel queries for data + count
+            const [rides, totalCount] = await Promise.all([
+                prisma.ride.findMany({
+                    where,
+                    select: rideListSelect,
+                    orderBy: { departureDatetime: 'asc' },
+                    skip,
+                    take,
+                }),
+                limit === -1 ? Promise.resolve(0) : prisma.ride.count({ where }),
+            ]);
+
+            logger.info({ count: rides.length, totalCount, filters }, 'Rides fetched');
+            return { data: rides, totalCount, page, limit };
         } catch (error) {
             logger.error({ error }, 'Failed to fetch rides');
             throw error;
@@ -77,7 +118,10 @@ export class RideService {
         try {
             const ride = await prisma.ride.findUnique({
                 where: { id },
-                include: { participants: { include: { profile: { include: { user: true } } } } },
+                select: {
+                    ...rideListSelect,
+                    updatedAt: true,
+                },
             });
             if (!ride) throw new Error('Ride not found');
             logger.info({ rideId: id }, 'Ride fetched');
@@ -109,21 +153,7 @@ export class RideService {
                         arrivalDatetime: new Date(data.arrivalDatetime),
                     }),
                 },
-                include: {
-                    participants: {
-                        include: {
-                            profile: {
-                                select: {
-                                    id: true,
-                                    firstname: true,
-                                    lastname: true,
-                                    username: true,
-                                    profileImageUrl: true,
-                                },
-                            },
-                        },
-                    },
-                },
+                select: rideListSelect,
             });
             logger.info({ rideId: id, profileId }, 'Ride updated');
             return ride;

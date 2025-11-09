@@ -116,7 +116,7 @@ Utile pour importer dans Postman, Insomnia, Bruno, etc.
 
 **Publics** :
 
--   `GET /api/profiles` - Liste de tous les profils
+-   `GET /api/profiles` - Liste de tous les profils (avec pagination et filtres)
 -   `GET /api/profiles/:id` - Détails d'un profil
 
 ### 🚘 Trajets (`/api/rides`)
@@ -129,8 +129,116 @@ Utile pour importer dans Postman, Insomnia, Bruno, etc.
 
 **Publics** :
 
--   `GET /api/rides` - Liste de tous les trajets
+-   `GET /api/rides` - Liste de tous les trajets (avec pagination et filtres)
 -   `GET /api/rides/:id` - Détails d'un trajet
+
+## 📄 Pagination et Filtres
+
+Les endpoints `GET /api/rides` et `GET /api/profiles` supportent la pagination et les filtres pour optimiser les performances et améliorer l'expérience utilisateur.
+
+### Pagination
+
+**Paramètres de pagination :**
+
+-   `page` (integer, défaut: 1) - Numéro de page (commence à 1)
+-   `limit` (integer, défaut: 50) - Nombre d'éléments par page
+    -   Utilisez `limit=-1` pour récupérer tous les éléments sans pagination
+
+**Réponse avec pagination :**
+
+```json
+{
+    "success": true,
+    "data": [
+        // ... tableau de résultats
+    ],
+    "pagination": {
+        "page": 1,
+        "limit": 50,
+        "totalCount": 258,
+        "totalPages": 6
+    }
+}
+```
+
+**Exemples :**
+
+```bash
+# Première page avec 10 résultats
+GET /api/rides?page=1&limit=10
+
+# Deuxième page
+GET /api/rides?page=2&limit=10
+
+# Récupérer tous les résultats (sans pagination)
+GET /api/rides?limit=-1
+```
+
+### Filtres pour les Trajets (`/api/rides`)
+
+**Filtres disponibles :**
+
+-   `departureCity` (string) - Filtrer par ville de départ
+-   `arrivalCity` (string) - Filtrer par ville d'arrivée
+-   `departureDate` (date, format: YYYY-MM-DD) - Filtrer par date de départ (sans l'heure)
+-   `arrivalDate` (date, format: YYYY-MM-DD) - Filtrer par date d'arrivée (sans l'heure)
+-   `maxPrice` (integer) - Prix maximum
+-   `minPrice` (integer) - Prix minimum
+-   `status` (enum: pending, confirmed, completed, cancelled) - Filtrer par statut
+-   `minAvailableSeats` (integer) - Nombre minimum de places disponibles
+
+**Exemples de requêtes filtrées :**
+
+```bash
+# Trajets Paris → Lyon
+GET /api/rides?departureCity=Paris&arrivalCity=Lyon
+
+# Trajets le 15 janvier 2025
+GET /api/rides?departureDate=2025-01-15
+
+# Trajets avec prix max 50€
+GET /api/rides?maxPrice=50
+
+# Trajets entre 20€ et 100€
+GET /api/rides?minPrice=20&maxPrice=100
+
+# Trajets en attente avec au moins 2 places
+GET /api/rides?status=pending&minAvailableSeats=2
+
+# Recherche complète avec pagination
+GET /api/rides?departureCity=Paris&arrivalCity=Lyon&departureDate=2025-01-15&maxPrice=50&page=1&limit=10
+```
+
+### Filtres pour les Profils (`/api/profiles`)
+
+**Filtres disponibles :**
+
+-   `isVerified` (boolean) - Filtrer par statut de vérification
+-   `isDriverVerified` (boolean) - Filtrer par statut de vérification conducteur
+-   `username` (string) - Recherche partielle par nom d'utilisateur (insensible à la casse)
+
+**Exemples de requêtes filtrées :**
+
+```bash
+# Profils vérifiés uniquement
+GET /api/profiles?isVerified=true
+
+# Conducteurs vérifiés
+GET /api/profiles?isDriverVerified=true
+
+# Recherche par nom d'utilisateur
+GET /api/profiles?username=marie
+
+# Combinaison de filtres avec pagination
+GET /api/profiles?isVerified=true&isDriverVerified=true&page=1&limit=10
+```
+
+### Notes importantes
+
+-   Les filtres peuvent être combinés pour des recherches complexes
+-   Les dates doivent être au format `YYYY-MM-DD` (ex: `2025-01-15`)
+-   La recherche `username` est partielle et insensible à la casse
+-   Avec `limit=-1`, le `totalCount` n'est pas calculé (gain de performance)
 
 ## 🛠️ Technologies
 
